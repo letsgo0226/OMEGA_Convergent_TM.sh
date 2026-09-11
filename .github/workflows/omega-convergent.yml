@@ -1,0 +1,41 @@
+name: OMEGA Convergent TM
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  repository_dispatch:
+    types: [omega-run]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: omega-convergent-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify and execute
+        shell: bash
+        run: |
+          test "$(wc -c < OMEGA_Convergent_TM.sh)" -lt 2048
+          test "$(wc -l < OMEGA_Convergent_TM.sh)" -le 1
+          ! grep -Eiq 'hashlib|sha(1|2|3|224|256|384|512)?' OMEGA_Convergent_TM.sh
+          bash OMEGA_Convergent_TM.sh 8 3/5 | tee omega.jsonl
+          test "$(grep -c '"'"'SPEC_OK'"'"':true' omega.jsonl)" -eq 8
+          {
+            echo '## OMEGA Convergent TM'
+            echo
+            echo 'Validated one-line program: <2048 bytes, no SHA/hashlib, 8/8 SPEC_OK=true.'
+          } >> "$GITHUB_STEP_SUMMARY"
