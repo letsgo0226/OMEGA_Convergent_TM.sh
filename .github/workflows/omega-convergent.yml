@@ -24,7 +24,7 @@ jobs:
     timeout-minutes: 4
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Verify and execute
         shell: bash
@@ -33,7 +33,7 @@ jobs:
           test "$(wc -l < OMEGA_Convergent_TM.sh)" -le 1
           ! grep -Eiq 'hashlib|sha(1|2|3|224|256|384|512)?' OMEGA_Convergent_TM.sh
           bash OMEGA_Convergent_TM.sh 8 3/5 | tee omega.jsonl
-          test "$(grep -c '"'"'SPEC_OK'"'"':true' omega.jsonl)" -eq 8
+          test "$(grep -c 'SPEC_OK\":true' omega.jsonl)" -eq 8
           {
             echo '## OMEGA Convergent TM'
             echo
